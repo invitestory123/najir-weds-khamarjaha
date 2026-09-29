@@ -14,25 +14,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const invitationOverlay = document.getElementById('invitationOverlay');
   
   // Controls & Modals
-  const doorSelectBtn = document.getElementById('doorSelectBtn');
-  const editDetailsBtn = document.getElementById('editDetailsBtn');
   const audioToggleBtn = document.getElementById('audioToggleBtn');
   const audioIconOn = document.getElementById('audioIconOn');
   const audioIconOff = document.getElementById('audioIconOff');
   const replayBtn = document.getElementById('replayBtn');
   
   // Modals
-  const doorModal = document.getElementById('doorModal');
-  const closeDoorModal = document.getElementById('closeDoorModal');
-  const editorModal = document.getElementById('editorModal');
-  const closeEditorModal = document.getElementById('closeEditorModal');
   const mapModal = document.getElementById('mapModal');
   const openMapBtn = document.getElementById('openMapBtn');
   const closeMapModal = document.getElementById('closeMapModal');
   const addToCalendarBtn = document.getElementById('addToCalendarBtn');
-  
-  // Forms & Inputs
-  const editorForm = document.getElementById('editorForm');
 
   // Application State
   let currentDoorId = '1';
@@ -496,55 +487,15 @@ document.addEventListener('DOMContentLoaded', () => {
       card.classList.toggle('active', card.dataset.door === doorId);
     });
 
-    doorModal.classList.add('hidden');
+    const dModal = document.getElementById('doorModal');
+    if (dModal) dModal.classList.add('hidden');
   }
 
   // Event Listener for Tap Overlay
   tapOverlay.addEventListener('click', openDoorInvitation);
   replayBtn.addEventListener('click', resetDoorState);
 
-  // --- Door Modal Controls ---
-  doorSelectBtn.addEventListener('click', () => doorModal.classList.remove('hidden'));
-  closeDoorModal.addEventListener('click', () => doorModal.classList.add('hidden'));
-  
-  document.querySelectorAll('.door-option-card').forEach(card => {
-    card.addEventListener('click', () => {
-      switchDoorStyle(card.dataset.door);
-    });
-  });
 
-  // --- Details Editor Controls ---
-  editDetailsBtn.addEventListener('click', () => editorModal.classList.remove('hidden'));
-  closeEditorModal.addEventListener('click', () => editorModal.classList.add('hidden'));
-
-  editorForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    document.getElementById('displayGroom').innerText = document.getElementById('inputGroom').value;
-    document.getElementById('displayBride').innerText = document.getElementById('inputBride').value;
-    document.getElementById('displayBismillah').innerText = document.getElementById('inputBismillah').value;
-    document.getElementById('displayGreeting').innerText = document.getElementById('inputGreeting').value;
-    document.getElementById('displayDateNum').innerText = document.getElementById('inputDateNum').value;
-    document.getElementById('displayMonth').innerText = document.getElementById('inputMonth').value;
-    document.getElementById('displayYear').innerText = document.getElementById('inputYear').value;
-    document.getElementById('displayDay').innerText = document.getElementById('inputDay').value;
-    document.getElementById('displayTime').innerText = document.getElementById('inputTime').value;
-    document.getElementById('displayVenue').innerText = document.getElementById('inputVenue').value;
-    document.getElementById('displayLocation').innerText = document.getElementById('inputLocation').value;
-    document.getElementById('displayDressCode').innerText = document.getElementById('inputDressCode').value;
-
-    // Update Map Modal text as well
-    document.getElementById('mapVenueTitle').innerText = document.getElementById('inputVenue').value;
-    document.getElementById('mapVenueAddress').innerText = document.getElementById('inputLocation').value;
-
-    // Load YouTube Background Music if URL provided
-    const ytUrlInput = document.getElementById('inputYoutubeUrl');
-    if (ytUrlInput && ytUrlInput.value) {
-      playYouTubeBackgroundMusic(ytUrlInput.value, true);
-    }
-
-    editorModal.classList.add('hidden');
-  });
 
   // --- YouTube Background Music Player Engine ---
   let currentYoutubeVideoId = '';
@@ -613,14 +564,14 @@ document.addEventListener('DOMContentLoaded', () => {
   openMapBtn.addEventListener('click', () => mapModal.classList.remove('hidden'));
   closeMapModal.addEventListener('click', () => mapModal.classList.add('hidden'));
 
-  // Close modals when clicking backdrop
-  [doorModal, editorModal, mapModal].forEach(modal => {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.add('hidden');
+  // Close modal when clicking backdrop
+  if (mapModal) {
+    mapModal.addEventListener('click', (e) => {
+      if (e.target === mapModal) {
+        mapModal.classList.add('hidden');
       }
     });
-  });
+  }
 
   // --- Couple Photo Switcher Logic ---
   const toggleIllustrationBtn = document.getElementById('toggleIllustrationBtn');
@@ -701,28 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- Constant Floating Order Bar Minimization / Expansion Logic ---
-  const floatingOrderBar = document.getElementById('floatingOrderBar');
-  const floatingWidgetClose = document.getElementById('floatingWidgetClose');
-  const floatingWidgetTrigger = document.getElementById('floatingWidgetTrigger');
 
-  if (floatingOrderBar && floatingWidgetClose && floatingWidgetTrigger) {
-    floatingWidgetClose.addEventListener('click', (e) => {
-      e.stopPropagation();
-      floatingOrderBar.classList.add('collapsed');
-      setTimeout(() => {
-        floatingOrderBar.classList.add('hidden');
-        floatingWidgetTrigger.classList.remove('hidden');
-      }, 300);
-    });
-
-    floatingWidgetTrigger.addEventListener('click', () => {
-      floatingWidgetTrigger.classList.add('hidden');
-      floatingOrderBar.classList.remove('hidden');
-      void floatingOrderBar.offsetWidth; // Force reflow
-      floatingOrderBar.classList.remove('collapsed');
-    });
-  }
 
   prefetchSecondaryAssets();
 });
