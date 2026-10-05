@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const invitationOverlay = document.getElementById('invitationOverlay');
   
   // Controls & Modals
+  const bgAudio = document.getElementById('bgAudio');
   const audioToggleBtn = document.getElementById('audioToggleBtn');
   const audioIconOn = document.getElementById('audioIconOn');
   const audioIconOff = document.getElementById('audioIconOff');
@@ -384,11 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
     isPlaying = true;
     initAudioContext();
 
-    // Trigger YouTube background music if URL input is filled
-    const ytUrlInput = document.getElementById('inputYoutubeUrl');
-    if (ytUrlInput && ytUrlInput.value) {
-      playYouTubeBackgroundMusic(ytUrlInput.value, true);
-    }
+    // Trigger background music (Santoor cover from YouTube Short 7fdkYoKiqmg)
+    startBackgroundMusic();
 
     // 1. Hide tap callout overlay
     tapOverlay.classList.add('fade-out');
@@ -449,6 +447,11 @@ document.addEventListener('DOMContentLoaded', () => {
     video.pause();
     video.currentTime = 0;
     
+    if (bgAudio) {
+      bgAudio.pause();
+      bgAudio.currentTime = 0;
+    }
+    
     staticCanvas.classList.remove('active');
     invitationOverlay.classList.remove('revealed');
     
@@ -497,20 +500,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-  // --- YouTube Background Music Player Engine ---
-  let currentYoutubeVideoId = '';
+  // --- Background Music Engine (Native Audio + YouTube Fallback) ---
+  const DEFAULT_YT_MUSIC_URL = 'https://youtube.com/shorts/7fdkYoKiqmg';
+  let currentYoutubeVideoId = '7fdkYoKiqmg';
   let ytPlayerIframe = null;
 
   function extractYouTubeId(url) {
-    if (!url) return '';
+    if (!url) return '7fdkYoKiqmg';
     url = url.trim();
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
     if (match && match[2] && match[2].length === 11) {
       return match[2];
     }
     if (url.length === 11) return url;
-    return '';
+    return '7fdkYoKiqmg';
+  }
+
+  function startBackgroundMusic() {
+    if (isAudioMuted) return;
+
+    if (bgAudio) {
+      bgAudio.muted = false;
+      const playPromise = bgAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          // Native background music playing smoothly
+        }).catch(err => {
+          console.warn('Native background audio autoplay prevented, falling back to YouTube player:', err);
+          playYouTubeBackgroundMusic(DEFAULT_YT_MUSIC_URL, true);
+        });
+      }
+    } else {
+      playYouTubeBackgroundMusic(DEFAULT_YT_MUSIC_URL, true);
+    }
   }
 
   function playYouTubeBackgroundMusic(url, autoPlay = true) {
@@ -548,6 +571,13 @@ document.addEventListener('DOMContentLoaded', () => {
     isAudioMuted = !isAudioMuted;
     video.muted = isAudioMuted;
     
+    if (bgAudio) {
+      bgAudio.muted = isAudioMuted;
+      if (!isAudioMuted && bgAudio.paused && hasOpened) {
+        bgAudio.play().catch(e => console.warn(e));
+      }
+    }
+
     toggleYouTubeAudioMute(isAudioMuted);
 
     if (isAudioMuted) {
